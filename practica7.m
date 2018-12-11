@@ -1,0 +1,131 @@
+%% Práctica 7: Respuesta en frecuencia y Simulink
+%% Datos generales:
+% Autor:
+% Marmolejo Martínez Hamlet Jorge
+%
+% Grupo: 2TV2 
+%
+% Profesor: Dr. Rafael Martinez Martinez
+%%
+%% Objetivos:
+% * Conocer la representación de un sistema LTI en Matlab
+% * Manipulación de instrucciones en MATLAB
+% * Mostrar las gráficas bode para funciones de tranferencia
+% * Conocer la respuesta en frecuencia de un sistema
+% * Conocer los usos básicos de Simulink para resolver sistemas
+% diferenciales
+%%
+%% Introducción
+% En esta práctica se mostrará el procedimiento para:
+% * Conocer la respuesta en frecuencia de un sistema LTI y su gráfica bode
+% * Usar las herramientas de Simulink para resolver sistemas diferenciales
+%% Simulación en código
+% El siguiente circuito mostrado en la  imagen 
+% <RLC_schematic.png>
+%
+% Para circuitos RLC tenemos que:
+% $$v_{i}(t)=v_{r}(t)+v_{c}(t)+v_{l}(t)$
+% 
+% Para la resistencia el  voltaje se define como:
+% $$v_{r}(t)=Ri(t)$
+%
+% Para el inductor se puede definir el voltaje como
+% $$v_{l}(t)=L\frac{\mathrm{d} i }{\mathrm{d} t}$
+%
+% Para el capacitor se define el voltaje como
+% $$v_{c}(t)=\frac{1}{c}\int_{0}^{t} i(t)dt$
+%
+% Y tenemos que
+% $$i(t)=C\frac{\mathrm{d} v_{o}(t)}{\mathrm{d} t}$
+%
+% Aplicando el teorema fundamental del cálculo
+%
+% Ahora sustituimos en la ecuación de LCK
+%
+% $$v_{i}(t)=Ri(t)+\frac{1}{c}\int_{0}^{t} i(t)dt+L\frac{\mathrm{d} i }{\mathrm{d}
+% t}$
+%
+% Reemplazamos a $$i(t)$
+%
+% $$C\dot{v_{i}(t)}=L\frac{\mathrm{d^{2}}v_{o}(t) }{\mathrm{d}
+% t^{2}}+R\frac{\mathrm{d} v_{o}(t)}{\mathrm{d} t}+\frac{1}{L}v_{o}(t)$
+%
+% Y despejamos a C
+% $$\dot{v_{i}(t)}=\frac{L}{C}\frac{\mathrm{d^{2}}v_{o}(t) }{\mathrm{d}
+% t^{2}}+\frac{R}{C}\frac{\mathrm{d} v_{o}(t)}{\mathrm{d}
+% t}+\frac{1}{LC}v_{o}(t)$
+%
+% Ahora con la función obtenemos la transformada de laplace para conocer la
+% función de transferencia
+% *Aplicamos transformada de Laplace a la ecuación de entrada y nos queda
+% $$s^{2}+\frac{R}{L}s+\frac{1}{LC}$
+% *Aplicamos ahora la transformada de laplace a la salida
+% $$\frac{R}{L}s$
+% Ahora con la definición de la función de transferencia 
+% $$H(s)=\frac{Y(s)}{X(s)}$
+% Sustituimos
+% $$H(s)=\frac{\frac{R}{L}s}{s^{2}+\frac{R}{L}s+\frac{1}{LC}}$
+%% 
+% Ahora definimos $$L=1H,C=100\mu F y R=10K\Omega$
+ syms t
+ L=1;
+ C=100^(-6);
+ R=10^(3);
+%%
+% Una vez ya definidos formamos nuestra función de transferencia
+ circuit_sys=tf([(R/L)],[1 (R/L) (1/L*C)])
+%%
+% Ahora obtenemos la respuesta al impulso
+ figure
+ impulse(circuit_sys)
+ legend('Respuesta al impulso')
+ %%
+% Ahora obtenemos la respuesta al escalón
+ figure
+ step(circuit_sys)
+ legend('Respuesta al escalón')
+%%
+% Definimos $$w_{0}=\frac{1}{\sqrt{LC}}$$
+ w0=1/sqrt(R*C);
+%%
+% Se muestran las gráficas de bode 
+ figure
+ hold on
+
+ for m=0:6
+    bode(tf([(R/L*(exp(-1*m)))],[1 (R/L*(exp(-1*m))) (1/L*(exp(-1*m))*C)]))
+    pause(0.5)
+    drawnow
+ end
+ grid on
+ legend('m=1','m=1e-1','m=1e-2','m=1e-3','m=1e-4','m=1e-5','m=1e-6')
+ title('Bode para la función de transferencia')
+ hold off
+%% Simulación con simulink Ejercicio a)
+% Primero encontramos la solución analítca mediante la transformada de
+% laplace y la función de transferencia
+syms t
+transformadaLaplace([6 5 1],[1],[1 0],[0 0],2*cos((4*t)-pi/3)*heaviside(t),10)
+%%
+% Presentamos el resultado numérico de la realización en simulink
+close all
+[a.Time,a.Data]
+%%
+% Ahora se presenta la solución del sistema como se ve en un scope
+plot(a.time,a.Data)
+legend('entrada f(t)','salida y(t)')
+grid on
+%% Simulación con simulink Ejercicio b)
+% Primero encontramos la solución analítca mediante la transformada de
+% laplace y la función de transferencia
+syms t
+transformadaLaplace([6 5 1],[1],[1 0],[0 0],0*t,10)
+%%
+% Presentamos el resultado numérico de la realización en simulink
+close all
+[b.Time,b.Data]
+%%
+% Ahora se presenta la solución del sistema como se ve en un scope
+plot(b.time,b.Data)
+legend('entrada f(t)','salida y(t)')
+grid on
